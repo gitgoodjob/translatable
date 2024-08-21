@@ -5,54 +5,52 @@ st.title('Translatable')
 st.write('This uses ai to translate text.')
 import streamlit as st
 from google.cloud import translate_v2 as translate
+from google.oauth2 import service_account
 
-# Initialize the Google Translate client
-def get_translate_client():
-    return translate.Client()
+# Initialize the Google Translate API client
+def init_translate_client():
+    credentials = service_account.Credentials.from_service_account_info(st.secrets["gcp_service_account"])
+    client = translate.Client(credentials=credentials)
+    return client
 
-# Function to fetch all supported languages
-def get_supported_languages(target_language="en"):
-    client = get_translate_client()
-    languages = client.get_languages(target_language=target_language)
-    return {lang['name']: lang['language'] for lang in languages}
-
-# Function to detect the language of the text using Google Translate
-def detect_language(text):
-    client = get_translate_client()
-    result = client.detect_language(text)
-    return result['language']
-
-# Function to translate the text using Google Translate
-def translate_text(text, target_language, source_language=None):
-    client = get_translate_client()
-
-    # If source_language is not provided, auto-detect it
-    if source_language == "auto":
-        source_language = detect_language(text)
-
-    translation = client.translate(text, target_language=target_language, source_language=source_language)
-    return translation['translatedText']
-
-# Streamlit User Interface
-st.title("Comprehensive Language Translation Chatbot with Google Translate")
-
-# Fetch supported languages
-languages = get_supported_languages()
-
-# User inputs
-input_text = st.text_area("Enter text to translate:")
-
-# Adding "auto" option for source language detection
-source_language = st.selectbox("Select source language:", ["auto"] + list(languages.keys()))
-
-# Select target language
-target_language = st.selectbox("Select target language:", list(languages.keys()))
-
-if st.button("Translate"):
-    source_language_code = "auto" if source_language == "auto" else languages[source_language]
-    target_language_code = languages[target_language]
+@st.cache_data(show_spinner=False)
+def detect_language_and_translate(text, target_language, translate_client):
+    # Detect the language of the input text
+    detection = translate_client.detect_language(text)
+    source_language = detection['language']
     
-    translated_text = translate_text(input_text, target_language_code, source_language_code)
-    st.write("Translated Text:", translated_text)
+    # Only perform translation if source and target languages are different
+    if source_language != target_language:
+        translation = translate_client.translate(text, target_language=target_language, source_language=source_language)
+        return source_language, translation['translatedText']
+    else:
+        return source_language, text
+
+# Main Streamlit App
+def main():
+    st.title("Basic Language Translation Chatbot")
+    
+    # Initialize the translation client
+    translate_client = init_translate_client()
+    
+    # Input field for user text
+    user_input = st.text_input("Enter the text you want to translate:")
+    
+    # Target language selection
+    target_language = st.selectbox("Select target language:", ['es', 'fr', 'de', 'hi', 'id', 'zh', 'ja', 'ru', 'ar', 'sanskrit'])
+    
+    # Process the translation only if there's user input
+    if user_input:
+        # Perform language detection and translation
+        source_language, translated_text = detect_language_and_translate(user_input, target_language, translate_client)
+        
+        # Display the results
+        st.write(f"**Detected Source Language**: {source_language}")
+        st.write(f"**Translated Text**: {translated_text}")
+    else:
+        st.warning("Please enter text to translate.")
+
+if __name__ == "__main__":
+    main()
 
 
