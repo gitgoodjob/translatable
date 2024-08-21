@@ -1,7 +1,5 @@
 # Translatable
-```
-⬆️ (Replace above with your app's name)
-```
+
 
 Translates stuff. 
 
