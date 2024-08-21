@@ -1,5 +1,5 @@
 import streamlit as st
-pip install google-cloud-translate
+
 st.title('Translatable')
 
 st.write('This uses ai to translate text.')
