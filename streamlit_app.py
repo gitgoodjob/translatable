@@ -13,7 +13,7 @@ def detect_language(text):
     headers = {
         "Content-Type": "application/x-www-form-urlencoded",
         "x-rapidapi-host": "text-translator2.p.rapidapi.com",
-        "x-rapidapi-key": "YOUR_RAPIDAPI_KEY"
+        "x-rapidapi-key": "313ce963c1msh273e89113e2f624p199a36jsn2112424f9549"
     }
 
     form_data = {
