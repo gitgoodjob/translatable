@@ -1,5 +1,5 @@
 import streamlit as st
 
-st.title('🎈 App Name')
+st.title('Translatable')
 
-st.write('Hello world!')
+st.write('This uses ai to translate text.')
